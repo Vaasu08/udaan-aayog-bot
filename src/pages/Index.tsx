@@ -3,6 +3,7 @@ import { Sparkles, Target, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 import SkillForm, { FormData } from "@/components/SkillForm";
 import BusinessCard from "@/components/BusinessCard";
+import KnittingAnimation from "@/components/KnittingAnimation";
 import { businessData, upskillSuggestions } from "@/data/businessData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,12 +37,13 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section 
-        className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center"
+        className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(135deg, rgba(30, 20, 10, 0.85), rgba(140, 60, 40, 0.75)), url(${heroImage})`
         }}
       >
-        <div className="container mx-auto px-4 py-20 text-center text-primary-foreground">
+        <KnittingAnimation />
+        <div className="container mx-auto px-4 py-20 text-center text-primary-foreground relative z-10">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 backdrop-blur-sm border border-primary-foreground/20">
               <Sparkles className="w-4 h-4" />
