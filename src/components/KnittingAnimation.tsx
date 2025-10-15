@@ -7,11 +7,22 @@ import womanKnittingImage from '@/assets/woman-knitting.jpg';
 // Woman Knitting Background Component
 function WomanKnitting() {
   const texture = useTexture(womanKnittingImage);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   return (
-    <mesh position={[-2, 0, -3]} scale={[4, 2.5, 1]}>
+    <mesh 
+      position={isMobile ? [-1.5, 0, -3] : [-2.5, 0, -3]} 
+      scale={isMobile ? [2.5, 1.5, 1] : [4, 2.5, 1]}
+    >
       <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial map={texture} transparent opacity={0.7} />
+      <meshBasicMaterial map={texture} transparent opacity={0.6} />
     </mesh>
   );
 }
@@ -20,6 +31,14 @@ function WomanKnitting() {
 function KnittingSweater() {
   const meshRef = useRef<THREE.Mesh>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,8 +59,9 @@ function KnittingSweater() {
         ? 2 * scrollProgress * scrollProgress
         : 1 - Math.pow(-2 * scrollProgress + 2, 2) / 2;
       
-      // Scale the sweater from 0.5 to 3.5 as user scrolls
-      const targetScale = 0.5 + easeProgress * 3;
+      // Scale the sweater - adjust for mobile
+      const maxScale = isMobile ? 2.5 : 3.5;
+      const targetScale = 0.5 + easeProgress * maxScale;
       meshRef.current.scale.y = THREE.MathUtils.lerp(
         meshRef.current.scale.y,
         targetScale,
@@ -65,8 +85,12 @@ function KnittingSweater() {
   });
 
   return (
-    <mesh ref={meshRef} position={[1, -0.5, 0]} rotation={[-0.15, 0, 0]}>
-      <planeGeometry args={[2.5, 3, 32, 32]} />
+    <mesh 
+      ref={meshRef} 
+      position={isMobile ? [0.5, -0.3, 0] : [1, -0.5, 0]} 
+      rotation={[-0.15, 0, 0]}
+    >
+      <planeGeometry args={isMobile ? [2, 2.5, 32, 32] : [2.5, 3, 32, 32]} />
       <meshStandardMaterial
         color="#d4a574"
         roughness={0.85}
@@ -81,6 +105,14 @@ function KnittingSweater() {
 function FloatingText() {
   const textRef = useRef<THREE.Group>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,9 +142,12 @@ function FloatingText() {
   const yPosition = scrollProgress > 0.4 ? 0.5 - (scrollProgress - 0.4) * 0.5 : 0.5;
 
   return (
-    <group ref={textRef} position={[1, yPosition, 1.5]}>
+    <group 
+      ref={textRef} 
+      position={isMobile ? [0.5, yPosition, 1.5] : [1, yPosition, 1.5]}
+    >
       <Text
-        fontSize={0.35}
+        fontSize={isMobile ? 0.25 : 0.35}
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
@@ -121,6 +156,7 @@ function FloatingText() {
         outlineColor="#1a0f0a"
         letterSpacing={0.02}
         fontWeight={700}
+        maxWidth={isMobile ? 3 : 5}
       >
         Tell Us About Yourself
       </Text>
@@ -132,6 +168,14 @@ function FloatingText() {
 function Scene() {
   const { camera } = useThree();
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -148,9 +192,11 @@ function Scene() {
   useFrame(() => {
     const easeProgress = scrollProgress * scrollProgress * (3 - 2 * scrollProgress);
     
-    // Subtle camera movement
-    const targetZ = 5 - easeProgress * 1.5;
-    const targetY = 0 + easeProgress * 0.5;
+    // Subtle camera movement - adjust for mobile
+    const zDistance = isMobile ? 1 : 1.5;
+    const yDistance = isMobile ? 0.3 : 0.5;
+    const targetZ = (isMobile ? 6 : 5) - easeProgress * zDistance;
+    const targetY = 0 + easeProgress * yDistance;
     
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.05);
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
