@@ -119,8 +119,8 @@ function FloatingText() {
         fillOpacity={opacity}
         outlineWidth={0.015}
         outlineColor="#1a0f0a"
-        font="/fonts/Inter-Bold.woff"
         letterSpacing={0.02}
+        fontWeight={700}
       >
         Tell Us About Yourself
       </Text>
