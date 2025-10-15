@@ -1,7 +1,20 @@
 import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
+import { Text, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import womanKnittingImage from '@/assets/woman-knitting.jpg';
+
+// Woman Knitting Background Component
+function WomanKnitting() {
+  const texture = useTexture(womanKnittingImage);
+  
+  return (
+    <mesh position={[-2, 0, -3]} scale={[4, 2.5, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial map={texture} transparent opacity={0.7} />
+    </mesh>
+  );
+}
 
 // Knitting Sweater Mesh Component
 function KnittingSweater() {
@@ -22,18 +35,20 @@ function KnittingSweater() {
 
   useFrame((state) => {
     if (meshRef.current) {
-      // Smooth easing
-      const easeProgress = scrollProgress * scrollProgress * (3 - 2 * scrollProgress);
+      // Smooth easing (ease-in-out-quad)
+      const easeProgress = scrollProgress < 0.5
+        ? 2 * scrollProgress * scrollProgress
+        : 1 - Math.pow(-2 * scrollProgress + 2, 2) / 2;
       
-      // Scale the sweater from 0.3 to 2.5 as user scrolls
-      const targetScale = 0.3 + easeProgress * 2.2;
+      // Scale the sweater from 0.5 to 3.5 as user scrolls
+      const targetScale = 0.5 + easeProgress * 3;
       meshRef.current.scale.y = THREE.MathUtils.lerp(
         meshRef.current.scale.y,
         targetScale,
         0.1
       );
 
-      // Subtle wave deformation
+      // Subtle wave deformation for cloth-like effect
       const time = state.clock.getElapsedTime();
       const geometry = meshRef.current.geometry as THREE.PlaneGeometry;
       const positions = geometry.attributes.position;
@@ -42,19 +57,20 @@ function KnittingSweater() {
         const x = positions.getX(i);
         const y = positions.getY(i);
         const wave = Math.sin(x * 3 + time * 0.5) * 0.02 * easeProgress;
-        positions.setZ(i, wave);
+        const wave2 = Math.cos(y * 2 + time * 0.3) * 0.015 * easeProgress;
+        positions.setZ(i, wave + wave2);
       }
       positions.needsUpdate = true;
     }
   });
 
   return (
-    <mesh ref={meshRef} position={[0, -1, 0]} rotation={[-0.2, 0, 0]}>
-      <planeGeometry args={[3, 4, 32, 32]} />
+    <mesh ref={meshRef} position={[1, -0.5, 0]} rotation={[-0.15, 0, 0]}>
+      <planeGeometry args={[2.5, 3, 32, 32]} />
       <meshStandardMaterial
         color="#d4a574"
-        roughness={0.8}
-        metalness={0.1}
+        roughness={0.85}
+        metalness={0.05}
         side={THREE.DoubleSide}
       />
     </mesh>
@@ -78,23 +94,33 @@ function FloatingText() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Show text between 40% and 70% scroll
-  const opacity = scrollProgress > 0.4 && scrollProgress < 0.7
-    ? Math.min((scrollProgress - 0.4) / 0.1, 1)
-    : scrollProgress >= 0.7
-    ? Math.max(1 - (scrollProgress - 0.7) / 0.1, 0)
-    : 0;
+  // Show text between 40% and 70% scroll with smooth fade
+  let opacity = 0;
+  if (scrollProgress > 0.4 && scrollProgress <= 0.5) {
+    // Fade in from 40% to 50%
+    opacity = (scrollProgress - 0.4) / 0.1;
+  } else if (scrollProgress > 0.5 && scrollProgress <= 0.7) {
+    // Stay visible
+    opacity = 1;
+  } else if (scrollProgress > 0.7 && scrollProgress <= 0.8) {
+    // Fade out from 70% to 80%
+    opacity = 1 - (scrollProgress - 0.7) / 0.1;
+  }
+
+  const yPosition = scrollProgress > 0.4 ? 0.5 - (scrollProgress - 0.4) * 0.5 : 0.5;
 
   return (
-    <group ref={textRef} position={[0, 0.5, 1]}>
+    <group ref={textRef} position={[1, yPosition, 1.5]}>
       <Text
-        fontSize={0.4}
+        fontSize={0.35}
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
         fillOpacity={opacity}
-        outlineWidth={0.02}
-        outlineColor="#30201a"
+        outlineWidth={0.015}
+        outlineColor="#1a0f0a"
+        font="/fonts/Inter-Bold.woff"
+        letterSpacing={0.02}
       >
         Tell Us About Yourself
       </Text>
@@ -133,17 +159,23 @@ function Scene() {
 
   return (
     <>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.6} />
       <directionalLight
         position={[5, 5, 5]}
-        intensity={0.8}
+        intensity={1}
         color="#ff9d66"
       />
       <directionalLight
         position={[-3, 2, -2]}
-        intensity={0.3}
+        intensity={0.4}
         color="#d4a574"
       />
+      <pointLight
+        position={[2, 1, 2]}
+        intensity={0.5}
+        color="#ffb380"
+      />
+      <WomanKnitting />
       <KnittingSweater />
       <FloatingText />
     </>
